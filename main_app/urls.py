@@ -148,7 +148,5 @@ urlpatterns = [
           name='sort_results'),
      path('check_new_assignments/', student_views.check_new_assignments,
           name='check_new_assignments'),
-     path('student/index/',student_views.student_index,
-          name="student_index")
 
 ]

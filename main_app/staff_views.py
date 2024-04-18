@@ -9,6 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 from datetime import timedelta
 from .forms import *
+from django.db.models import Count
 from .models import *
 
 
@@ -21,21 +22,25 @@ def staff_home(request):
     total_subject = subjects.count()
     attendance_list = Attendance.objects.filter(subject__in=subjects)
     total_attendance = attendance_list.count()
-    submitted_assignments = AssignmentSubmission.objects.all()
+    submitted_assignments = AssignmentSubmission.objects.filter(assignment__subject__staff=staff)
     total_unchecked_assignments = len(submitted_assignments)
+    # assignments = Assignment.objects.filter(subject__in=subjects)
+    # total_unchecked_assignments = assignments.annotate(
+    #     num_submissions=Count('assignmentsubmission')
+    # ).filter(num_submissions=0).count()
     attendance_list = []
     subject_list = []
     student_data=[]
-    for student in students:
-        data = {
-                "name": student.admin.first_name + " " + student.admin.last_name,
-                "course": student.course.name
-                }
-        student_data.append(data)
     for subject in subjects:
         attendance_count = Attendance.objects.filter(subject=subject).count()
         subject_list.append(subject.name)
         attendance_list.append(attendance_count)
+    for student in students:
+        data = {
+                "name": student.admin.first_name + " " + student.admin.last_name,
+                "course": subject.name
+                }
+        student_data.append(data)
     context = {
         'page_title': 'Teacher Panel - ' + str(staff.admin.first_name) + ' (' + str(staff.course) + ')',
         'total_students': total_students,
@@ -350,17 +355,6 @@ def manage_assignment(request):
         'submitted_assignments': submitted_assignments
     }
     return render(request, "staff_template/manage_assignment.html", context)
-
-# def remove_submission(request):
-#     submission_id = request.POST.get('submission_id')
-#     try:
-#         submission = AssignmentSubmission.objects.get(pk=submission_id)
-#         submission.delete()
-#         return JsonResponse({'message': 'Assignment submission removed successfully.'}, status=200)
-#     except AssignmentSubmission.DoesNotExist:
-#         return JsonResponse({'error': 'Assignment submission not found.'}, status=404)
-#     except Exception as e:
-#         return JsonResponse({'error': str(e)}, status=500)
 
 def remove_submission(request):
         submission_id = request.POST.get('submission_id')

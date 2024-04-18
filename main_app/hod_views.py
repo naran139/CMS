@@ -15,6 +15,7 @@ from .models import *
 
 from django.core.mail import send_mail
 from django.conf import settings
+from django.db.models import Q
 
 
 
@@ -26,6 +27,12 @@ def admin_home(request):
     total_course = Course.objects.all().count()
     attendance_list = Attendance.objects.filter(subject__in=subjects)
     total_attendance = attendance_list.count()
+    if request.method != 'POST':
+        allLeave = LeaveReportStaff.objects.all()
+        total_buttons = allLeave.filter(Q(status=0) | Q(status__isnull=True)).count()
+    if request.method != 'POST':
+        allLeave = LeaveReportStudent.objects.all()
+        totalstudentleave = allLeave.filter(Q(status=0) | Q(status__isnull=True)).count()
     attendance_list = []
     subject_list = []
     for subject in subjects:
@@ -85,6 +92,8 @@ def admin_home(request):
         "student_count_list_in_subject": student_count_list_in_subject,
         "student_count_list_in_course": student_count_list_in_course,
         "course_name_list": course_name_list,
+        "total_buttons":total_buttons,
+        'totalstudentleave':totalstudentleave,
 
     }
     return render(request, 'hod_template/home_content.html', context)

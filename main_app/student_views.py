@@ -284,5 +284,3 @@ def check_new_assignments(request):
     new_assignments = Assignment.objects.filter(created_at__gte=cutoff_date)
     return JsonResponse({'new_assignments': new_assignments.count()})
 
-def student_index(request):
-    return render(request,"main_app/index.html")
